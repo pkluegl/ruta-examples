@@ -20,14 +20,14 @@ PACKAGE org.apache.uima.ruta.novel;
 IMPORT PACKAGE de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos FROM desc.type.POS AS pos;
 IMPORT de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Lemma FROM desc.type.LexicalUnits;
 
-UIMAFIT de.tudarmstadt.ukp.dkpro.core.stanfordnlp.StanfordSegmenter;
+UIMAFIT de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpSegmenter;
 UIMAFIT de.tudarmstadt.ukp.dkpro.core.stanfordnlp.StanfordPosTagger;
 
 SCRIPT org.apache.uima.ruta.novel.Name;
 
 uima.tcas.DocumentAnnotation{-CONTAINS(pos.POS)} -> {
 	uima.tcas.DocumentAnnotation{-> SETFEATURE("language", "de")};
-	EXEC(StanfordSegmenter);
+	EXEC(OpenNlpSegmenter);
 	EXEC(StanfordPosTagger, {pos.POS});
 };
 
