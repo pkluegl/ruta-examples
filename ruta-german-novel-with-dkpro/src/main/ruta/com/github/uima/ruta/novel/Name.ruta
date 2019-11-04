@@ -15,16 +15,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-PACKAGE org.apache.uima.ruta.novel;
+PACKAGE com.github.uima.ruta.novel;
 
-IMPORT PACKAGE de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos FROM desc.type.POS AS pos;
+IMPORT PACKAGE de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos FROM desc.type.POS;
 IMPORT de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Lemma FROM desc.type.LexicalUnits;
 
-SCRIPT org.apache.uima.ruta.novel.DirectSpeech;
+TYPESYSTEM com.github.uima.ruta.novel.DirectSpeechRutaTypeSystem;
 
-WORDLIST ObjectWordList = 'wordlists/ObjectWords.txt';
-WORDLIST VerbList = 'wordlists/Verbs.txt';
-WORDLIST dictionary = 'generated.mtwl';
+WORDLIST ObjectWordList = 'wordlists/german_novel/ObjectWords.txt';
+WORDLIST VerbList = 'wordlists/german_novel/Verbs.txt';
+WORDLIST dictionary = 'wordlists/german_novel.mtwl';
 
 STRINGLIST AddNames;
 STRINGLIST FirstNames;
@@ -32,34 +32,36 @@ STRINGLIST LastNames;
 STRINGLIST PersNames;
 STRING Match;
 
-DECLARE PersName, AddName, FirstName, LastName, AnAnimal,
+DECLARE PersName, AddName, FirstName, LastName, Animal,
 	RelativesTitle, GeneralTitle, MilitaryTitle, NobleTitle,
-	Job, BodyPart, IMPhrase;
+	Job, BodyPart, IMPhrase, NeutralArticle;
 
-CALL(DirectSpeech);
-RETAINTYPE(SPACE);
-TRIE("Animals.txt" = AnAnimal,
-    "FirstNames.txt" = FirstName,
-    "GeneralTitles.txt" = GeneralTitle,
-    "IMPhrases.txt" = IMPhrase,
-    "Jobs.txt" = Job,
-    "MilitaryTitles.txt" = MilitaryTitle,
-    "NobleTitles.txt" = NobleTitle,
-    "RelativesTitles.txt" = RelativesTitle,
+
+
+ADDRETAINTYPE(SPACE);
+TRIE("german_novel/Animals.txt" = Animal,
+    "german_novel/FirstNames.txt" = FirstName,
+    "german_novel/GeneralTitles.txt" = GeneralTitle,
+    "german_novel/IMPhrases.txt" = IMPhrase,
+    "german_novel/Jobs.txt" = Job,
+    "german_novel/MilitaryTitles.txt" = MilitaryTitle,
+    "german_novel/NobleTitles.txt" = NobleTitle,
+    "german_novel/RelativesTitles.txt" = RelativesTitle,
+     "german_novel/NeutralArticle.txt" = NeutralArticle,
     dictionary, false, 0, false, 0, ".,-/");
-Document{-> RETAINTYPE};
+REMOVERETAINTYPE(SPACE);
 
-//-------------------------------------- VORNAMEN -----------------------------------------------\\
+// first names
 
-// Titel, nach denen wahrscheinlich ein Vorname kommt
-(RelativesTitle|AnAnimal) pos.N{-PARTOF(FirstName), -PARTOF(SPECIAL)
+// titles followed by unknown first name
+(RelativesTitle|Animal) POS_NOUN{-PARTOF(FirstName), -PARTOF(SPECIAL)
     -> MARK(FirstName), MATCHEDTEXT(Match), ADD(FirstNames, Match)};
 
-// Vornamen, die mit "s" enden speichern
+// also store first names with 's' postfix
 FirstName{-> MATCHEDTEXT(Match), ADD(FirstNames, Match + "s")};
 
 // Alle Vornamen in der Liste FirstNames markieren
-pos.N{-PARTOF(FirstName), INLIST(FirstNames) -> MARK(FirstName)};
+POS_NOUN{-PARTOF(FirstName), INLIST(FirstNames) -> MARK(FirstName)};
 
 // Vorname + Vorname = Vorname
 FirstName{-> SHIFT(FirstName, 1, 2)} FirstName{-> UNMARK(FirstName)};
@@ -68,7 +70,7 @@ FirstName{-> SHIFT(FirstName, 1, 2)} FirstName{-> UNMARK(FirstName)};
 //-------------------------------------- NACHNAMEN ----------------------------------------------\\
 
 // Vornamen +  CW (-> Nachname)
-CW{INLIST(FirstNames)} "von"? CW{-PARTOF(FirstName), -PARTOF(LastName), -PARTOF(pos.PP)
+CW{INLIST(FirstNames)} "von"? CW{-PARTOF(FirstName), -PARTOF(LastName), -PARTOF(POS_ADP)
     -> MARK(LastName, 2, 3), MATCHEDTEXT(Match), ADD(LastNames, Match)};
 
 // Titel, nach denen wahrscheinlich ein Nachname kommt
@@ -80,17 +82,17 @@ CW{INLIST(FirstNames)} "von"? CW{-PARTOF(FirstName), -PARTOF(LastName), -PARTOF(
 LastName{-> MATCHEDTEXT(Match), ADD(LastNames, Match + "s")};
 
 // Markieren der Namen in LastName
-pos.N{-PARTOF(FirstName), -PARTOF(LastName), INLIST(LastNames) -> MARK(LastName)};
+POS_NOUN{-PARTOF(FirstName), -PARTOF(LastName), INLIST(LastNames) -> MARK(LastName)};
 
 
 //-------------------------------------- ADDNAMEN -----------------------------------------------\\
 
 // Verschiedene Titel zusammenfassen
-(AnAnimal|RelativesTitle|GeneralTitle|MilitaryTitle|NobleTitle|Job)
+(Animal|RelativesTitle|GeneralTitle|MilitaryTitle|NobleTitle|Job)
 {-> MARK(AddName), MATCHEDTEXT(Match), ADD(AddNames, Match)};
 
 // Alle Zusatztitel in der Liste AddNames markieren
-pos.N{-PARTOF(AddName), INLIST(AddNames, Lemma.value) -> MARK(AddName)};
+POS_NOUN{-PARTOF(AddName), INLIST(AddNames, Lemma.value) -> MARK(AddName)};
 
 
 //-------------------------------------- PERSONEN -----------------------------------------------\\
@@ -100,18 +102,18 @@ pos.N{-PARTOF(AddName), INLIST(AddNames, Lemma.value) -> MARK(AddName)};
 (AddName* FirstName? @LastName){-PARTOF(PersName) -> MARK(PersName)};
 
 // Sprecher nach direkter Rede als Person markieren
-DirectSpeech COMMA? pos.V{INLIST(VerbList, Lemma.value)} pos.ART? CW+{-PARTOF(PersName)
+DirectSpeech COMMA? POS_VERB{INLIST(VerbList, Lemma.value)} POS_DET? CW+{-PARTOF(PersName)
     -> MARK(PersName), MATCHEDTEXT(Match), ADD(PersNames, Match)};
 
 // Alle Personen in der Liste PersNames markieren
-pos.N{-PARTOF(PersName), INLIST(PersNames, Lemma.value) -> MARK(PersName)};
+POS_NOUN{-PARTOF(PersName), INLIST(PersNames, Lemma.value) -> MARK(PersName)};
 
 
 //-------------------------------------- KORREKTUR ----------------------------------------------\\
 
 // Eigennamen, die nicht als Vornamen oder Nachnamen erkannt wurden
 Document{-> CLEAR(FirstNames)};
-DirectSpeech COMMA? pos.V{INLIST(VerbList, Lemma.value)} CW+{-PARTOF(FirstName), -PARTOF(LastName),
+DirectSpeech COMMA? POS_VERB{INLIST(VerbList, Lemma.value)} CW+{-PARTOF(FirstName), -PARTOF(LastName),
 -PARTOF(AddName) -> MARK(FirstName), MATCHEDTEXT(Match), ADD(FirstNames, Match)};
 
 // Eindeutige Phrasen nach denen ein Name kommt
@@ -119,5 +121,7 @@ IMPhrase CW{-PARTOF(FirstName) -> MARK(FirstName), MATCHEDTEXT(Match),
 ADD(FirstNames, Match, Match + "s")};
 
 // Alle Vornamen in der Liste FirstNames markieren
-pos.N{-PARTOF(FirstName), INLIST(FirstNames) -> MARK(FirstName)};
+POS_NOUN{-PARTOF(FirstName), INLIST(FirstNames) -> MARK(FirstName)};
 FirstName{-PARTOF(PersName) -> MARK(PersName)};
+
+NeutralArticle pn:PersName{IS(FirstName) -> UNMARK(pn)};

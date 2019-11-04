@@ -1,0 +1,3 @@
+The sample text (ruta-german-novel-with-dkpro/src/test/resources/samples/sample.txt) is licensed under the Project Gutenberg License (https://www.gutenberg.org/wiki/Gutenberg:The_Project_Gutenberg_License)
+
+The dkpro-core-stanfordnlp-gpl dependency is licensed under the GPL 3 license (https://www.gnu.org/licenses/gpl-3.0.html)

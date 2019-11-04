@@ -15,20 +15,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
-PACKAGE org.apache.uima.ruta.novel;
+PACKAGE com.github.uima.ruta.novel;
 
-IMPORT PACKAGE de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos FROM desc.type.POS AS pos;
-IMPORT de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Lemma FROM desc.type.LexicalUnits;
+DECLARE DirectSpeech;
 
-UIMAFIT de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpSegmenter;
-UIMAFIT de.tudarmstadt.ukp.dkpro.core.stanfordnlp.StanfordPosTagger;
+(SPECIAL.ct == "»"{-PARTOF(DirectSpeech)} # SPECIAL.ct == "«"){-> DirectSpeech};
 
-SCRIPT org.apache.uima.ruta.novel.Name;
-
-uima.tcas.DocumentAnnotation{-CONTAINS(pos.POS)} -> {
-	uima.tcas.DocumentAnnotation{-> SETFEATURE("language", "de")};
-	EXEC(OpenNlpSegmenter);
-	EXEC(StanfordPosTagger, {pos.POS});
-};
-
-CALL(Name);
+//FOREACH(special) SPECIAL{}{
+//
+//	(special.ct == "»"{-PARTOF(DirectSpeech)} # SPECIAL.ct == "«"){-> DirectSpeech};
+//	(special.ct == "›"{-PARTOF(DirectSpeech)} # SPECIAL.ct == "‹"){-> DirectSpeech};
+//	(special.ct == "‘"{-PARTOF(DirectSpeech)} # SPECIAL.ct == "’"){-> DirectSpeech};
+//	(special.ct == "“"{-PARTOF(DirectSpeech)} # SPECIAL.ct == "”"){-> DirectSpeech};
+//	(special.ct == "‚"{-PARTOF(DirectSpeech)} # SPECIAL.ct == "‛"){-> DirectSpeech};
+//	(special.ct == "„"{-PARTOF(DirectSpeech)} # SPECIAL.ct == "‟"){-> DirectSpeech};
+//}

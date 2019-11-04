@@ -227,7 +227,7 @@
       <nameValuePair>
         <name>debugWithMatches</name>
         <value>
-          <boolean>false</boolean>
+          <boolean>true</boolean>
         </value>
       </nameValuePair>
       <nameValuePair>
@@ -235,7 +235,9 @@
         <value>
           <array>
             <string>org.apache.uima.ruta.type.SPACE</string>
-            <string>org.apache.uima.ruta.type.BREAK</string>
+            <!-- 
+             <string>org.apache.uima.ruta.type.BREAK</string>
+             -->
             <string>org.apache.uima.ruta.type.MARKUP</string>
           </array>
         </value>
@@ -243,14 +245,14 @@
       <nameValuePair>
         <name>removeBasics</name>
         <value>
-          <boolean>true</boolean>
+          <boolean>false</boolean>
         </value>
       </nameValuePair>
       <nameValuePair>
         <name>seeders</name>
         <value>
           <array>
-            <string>org.apache.uima.ruta.seed.TextSeeder</string>
+            <string>org.apache.uima.ruta.seed.DefaultSeeder</string>
           </array>
         </value>
       </nameValuePair>

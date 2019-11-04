@@ -15,14 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-PACKAGE org.apache.uima.ruta.novel;
+PACKAGE com.github.uima.ruta.novel;
 
-DECLARE DirectSpeech;
+IMPORT PACKAGE de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos FROM desc.type.POS;
+IMPORT de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Lemma FROM desc.type.LexicalUnits;
 
-SPECIAL.ct == "»" #{-> MARK(DirectSpeech, 1, 2, 3)} SPECIAL.ct == "«";
-//"›" #{-> MARK(DirectSpeech, 1, 2, 3)} "‹";
-//"»" #{-> MARK(DirectSpeech, 1, 2, 3)} "«";
-//"‘" #{-> MARK(DirectSpeech, 1, 2, 3)} "’";
-//"“" #{-> MARK(DirectSpeech, 1, 2, 3)} "”";
-//"‚" #{-> MARK(DirectSpeech, 1, 2, 3)} "‛";
-//"„" #{-> MARK(DirectSpeech, 1, 2, 3)} "‟";
+UIMAFIT org.dkpro.core.opennlp.OpenNlpSegmenter;
+UIMAFIT org.dkpro.core.stanfordnlp.StanfordPosTagger;
+
+SCRIPT com.github.uima.ruta.novel.DirectSpeech;
+SCRIPT com.github.uima.ruta.novel.Name;
+
+uima.tcas.DocumentAnnotation{-CONTAINS(POS)} -> {
+	uima.tcas.DocumentAnnotation{-> SETFEATURE("language", "de")};
+	EXEC(OpenNlpSegmenter);
+	EXEC(StanfordPosTagger, {POS});
+};
+
+CALL(DirectSpeech);
+CALL(Name);
