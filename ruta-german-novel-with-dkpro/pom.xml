@@ -28,7 +28,7 @@
 		<ruta-version>2.7.1-SNAPSHOT</ruta-version>
 		<dkpro-version>1.11.1</dkpro-version>
 
-		<junit-version>4.12</junit-version>
+		<junit-version>4.13.1</junit-version>
 	</properties>
 
 	<dependencies>
